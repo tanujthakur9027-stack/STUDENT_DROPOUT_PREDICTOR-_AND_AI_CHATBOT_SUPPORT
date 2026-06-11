@@ -215,8 +215,7 @@ elif st.session_state.view_state == "dashboard":
 
         st.markdown("<br>", unsafe_allow_html=True)
         analyze_btn = st.button("RUN PREDICTIVE ANALYSIS", use_container_width=True)
-
-    with col2:
+with col2:
         st.markdown('<div class="column-header">Dynamic Analytics Engine</div>', unsafe_allow_html=True)
 
         if analyze_btn:
@@ -231,14 +230,14 @@ elif st.session_state.view_state == "dashboard":
                 m1, m2 = st.columns(2)
                 m1.metric(label="Calculated Risk Score", value=f"{risk_probability:.1f}%")
 
-                if risk_probability < 25:
-                    m2.success("🟢 LOW")
+                if risk_probability < 35:
+                    m2.success("🟢 STABLE")
                     st.success("This student currently shows low dropout risk.")
-                elif risk_probability < 50:
-                    m2.warning("🟡 MODERATE")
+                elif risk_probability < 70:
+                    m2.warning("🟡 MONITOR")
                     st.warning("Moderate risk detected. Early intervention recommended.")
                 else:
-                    m2.error("🔴 HIGH")
+                    m2.error("🔴 CRITICAL")
                     st.error("High-risk pattern detected. Immediate counselor action recommended.")
                     st.info("""
                     ### AI Counselor Recommendations
