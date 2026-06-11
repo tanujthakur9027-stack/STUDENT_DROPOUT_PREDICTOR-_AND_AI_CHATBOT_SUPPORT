@@ -1,18 +1,10 @@
 import streamlit as st
-st.title("Chat App")
-
-# Initialize session state
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
 import pandas as pd
-import matplotlib.pyplot as plt
-import numpy as np
 import pickle
 import os
 
 # --------------------------------------------------
-# PAGE CONFIG (Forces Dark/Wide Theme Layout)
+# 1. PAGE CONFIGURATION
 # --------------------------------------------------
 st.set_page_config(
     page_title="AI Dropout Prediction & Counseling System",
@@ -22,17 +14,17 @@ st.set_page_config(
 )
 
 # --------------------------------------------------
-# PREMIUM GRADIENT GRAPHICS & STYLING (Hugging Face / Gradio Look)
+# 2. CUSTOM THEME GRAPHICS & INTERFACE DESIGN (CSS)
 # --------------------------------------------------
 st.markdown("""
 <style>
-    /* Global dark app background overrides */
+    /* Global dark app background canvas style matching Hugging Face Spaces */
     .stApp {
         background-color: #0B0F19;
         color: #F3F4F6;
     }
     
-    /* Modern Landing Hub Frame */
+    /* Elegant Landing Portal Card Frame */
     .landing-card {
         background: #111827;
         border: 1px solid #1F2937;
@@ -44,7 +36,7 @@ st.markdown("""
         max-width: 600px;
     }
     
-    /* Beautiful Gradient Header Titles */
+    /* Shimmering Gradient Header Typography */
     .gradient-title {
         font-size: 38px;
         font-weight: 800;
@@ -62,7 +54,7 @@ st.markdown("""
         margin-bottom: 25px;
     }
     
-    /* Segment headers for Academic vs Financial inputs */
+    /* Categorized Metrics Input Section Dividers */
     .column-header {
         font-size: 18px;
         font-weight: 600;
@@ -72,7 +64,7 @@ st.markdown("""
         padding-bottom: 6px;
     }
     
-    /* High-impact action buttons styling */
+    /* Core Call-to-Action Theme Accent Buttons */
     div.stButton > button:first-child {
         background: linear-gradient(90deg, #A7F3D0 0%, #93C5FD 100%) !important;
         color: #0F172A !important;
@@ -90,14 +82,14 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --------------------------------------------------
-# LOAD MODEL FILES
+# 3. SECURE ASSET LOADING SUBROUTINES
 # --------------------------------------------------
 @st.cache_resource
 def load_ai_assets():
     required_files = ["dropout_model.pkl", "features.pkl", "importance.pkl"]
     for file in required_files:
         if not os.path.exists(file):
-            st.error(f"Missing file: {file}")
+            st.error(f"⚠️ Critical Background Asset Missing: {file}")
             return None, None, None
     try:
         with open("dropout_model.pkl", "rb") as f:
@@ -108,7 +100,7 @@ def load_ai_assets():
             importance = pickle.load(f)
         return model, features, importance
     except Exception as e:
-        st.error(f"Error loading model files: {e}")
+        st.error(f"❌ Structural Failure Loading Model Assets: {e}")
         return None, None, None
 
 model, features, importance = load_ai_assets()
@@ -117,20 +109,21 @@ if model is None:
     st.stop()
 
 # --------------------------------------------------
-# NAVIGATION STATE MANAGEMENT
+# 4. PERSISTENT SYSTEM NAVIGATION BLOCK
 # --------------------------------------------------
 if "view_state" not in st.session_state:
     st.session_state.view_state = "welcome"
 
-# Sidebar Workspace Switcher
 st.sidebar.header("⚙️ System Control Center")
 app_mode = st.sidebar.radio(
     "Navigate Workspace",
     ["Welcome Portal Cover", "Counselor Dashboard & Risk Evaluator", "Student Safe-Space Chatbot"]
 )
 
-# Sync sidebar choices back to current state tracking
-if app_mode == "Counselor Dashboard & Risk Evaluator":
+# Bind navigation selections cleanly to session memory parameters
+if app_mode == "Welcome Portal Cover":
+    st.session_state.view_state = "welcome"
+elif app_mode == "Counselor Dashboard & Risk Evaluator":
     st.session_state.view_state = "dashboard"
 elif app_mode == "Student Safe-Space Chatbot":
     st.session_state.view_state = "chatbot"
@@ -162,66 +155,51 @@ if st.session_state.view_state == "welcome":
 # SCREEN 2: COUNSELOR DASHBOARD & RISK EVALUATOR
 # ==================================================
 elif st.session_state.view_state == "dashboard":
-    
-    # Modern Gradient Top Visual Bar
     st.markdown("<div style='background: linear-gradient(90deg, #A7F3D0 0%, #93C5FD 100%); height: 16px; border-radius: 4px; margin-bottom: 5px;'></div>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center; color: #9CA3AF; font-size: 13px;'>Fill in the precise academic and behavioral metrics below for analysis</p>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # Core Layout Grid Structure
     col1, col2 = st.columns([1.1, 1], gap="large")
 
     with col1:
         input_data = {}
-        
-        # Subdivide features explicitly into Academic vs Financial Column Panes
         sub_col_left, sub_col_right = st.columns(2, gap="medium")
         
         with sub_col_left:
             st.markdown('<div class="column-header">Academic Metrics</div>', unsafe_allow_html=True)
-            
-            # Extract standard elements safely if present in feature matrix
             if "Age at enrollment" in features:
                 input_data["Age at enrollment"] = st.slider("Age at Enrollment", min_value=15, max_value=60, value=20)
-            
-            # Optional UI additions to blend with your image placeholders
-            st.slider("Class Attendance Rate (%)", min_value=0, max_value=100, value=85, key="attendance_ui")
-            st.slider("1st Semester Grade Average (0-10 scale)", min_value=0, max_value=10, value=7, key="grade_ui")
+            if "Attendance_Rate" in features:
+                input_data["Attendance_Rate"] = st.slider("Class Attendance Rate (%)", min_value=0, max_value=100, value=85)
+            if "Curricular_units_1st_sem_grade" in features:
+                input_data["Curricular_units_1st_sem_grade"] = st.slider("1st Semester Grade Average (0-20 scale)", min_value=0, max_value=20, value=14)
 
         with sub_col_right:
             st.markdown('<div class="column-header">Financial & Support Status</div>', unsafe_allow_html=True)
-            
             if "Scholarship holder" in features:
-                s_choice = st.radio("Scholarship Holder", ["No", "Yes"], horizontal=True)
+                s_choice = st.radio("Scholarship Holder", ["No", "Yes"], horizontal=True, key="scholarship_radio")
                 input_data["Scholarship holder"] = 1 if s_choice == "Yes" else 0
-                
             if "Debtor" in features:
-                d_choice = st.radio("Is Institutional Debtor", ["No", "Yes"], horizontal=True)
+                d_choice = st.radio("Is Institutional Debtor", ["No", "Yes"], horizontal=True, key="debtor_radio")
                 input_data["Debtor"] = 1 if d_choice == "Yes" else 0
-                
-            st.radio("Tuition Fees Up-to-Date", ["Yes", "No"], horizontal=True, key="tuition_ui")
             if "Gender" in features:
                 g_choice = st.radio("Demographic: Gender", ["Female", "Male"], horizontal=True, key="gender_radio")
                 input_data["Gender"] = 1 if g_choice == "Male" else 0
 
-        # Automatically resolve standard loop elements not mapped yet
-        for feature in features:
-            if feature not in input_data:
-                if feature == "Gender":
-                    g_choice = st.selectbox("Gender", ["Female", "Male"])
-                    input_data[feature] = 1 if g_choice == "Male" else 0
-                else:
-                    input_data[feature] = 0.0
+        # Fill potential training parameter array gaps automatically
+        for feat in features:
+            if feat not in input_data:
+                input_data[feat] = 0.0
 
         st.markdown("<br>", unsafe_allow_html=True)
         analyze_btn = st.button("RUN PREDICTIVE ANALYSIS", use_container_width=True)
-with col2:
+
+    with col2:
         st.markdown('<div class="column-header">Dynamic Analytics Engine</div>', unsafe_allow_html=True)
 
         if analyze_btn:
             try:
                 input_df = pd.DataFrame([input_data])[features]
-
                 if hasattr(model, "predict_proba"):
                     risk_probability = model.predict_proba(input_df)[0][1] * 100
                 else:
@@ -232,80 +210,44 @@ with col2:
 
                 if risk_probability < 35:
                     m2.success("🟢 STABLE")
-                    st.success("This student currently shows low dropout risk.")
+                    st.success("Evaluation Signature: Low attrition risk markers. Maintain baseline institutional visibility.")
                 elif risk_probability < 70:
                     m2.warning("🟡 MONITOR")
-                    st.warning("Moderate risk detected. Early intervention recommended.")
+                    st.warning("Evaluation Signature: Early warning telemetry active. Flag for soft checkpoint outreach.")
                 else:
                     m2.error("🔴 CRITICAL")
-                    st.error("High-risk pattern detected. Immediate counselor action recommended.")
-                    st.info("""
-                    ### AI Counselor Recommendations
-                    - Review outstanding financial obligations immediately.
-                    - Schedule a proactive 1-on-1 wellness session.
-                    - Sync updates with peer academic support channels.
-                    """)
+                    st.error("Evaluation Signature: Multi-vector threat signature match. Initiate prioritized emergency intervention.")
+                    st.info("### 🤖 AI Counselor Recommendations\n- Review financial obligations.\n- Coordinate urgent advisor-led 1-on-1 counseling window.")
 
-                # XAI Metric Chart Render Block
+                # Custom XAI Matplotlib Dark Bar Chart Rendering
                 st.markdown("---")
                 st.markdown("### 📊 Personalized Feature Impact Analysis")
-                st.caption("This Explainable AI (XAI) chart shows exactly which risk factors contributed most to this specific student's prediction score.")
-
                 try:
                     if isinstance(importance, dict):
                         import matplotlib.pyplot as plt
-
-                        # Calculate dynamic impact: absolute input value * structural model weight
-                        dynamic_importance = {
-                            feat: abs(input_data.get(feat, 0)) * importance[feat] 
-                            for feat in features if feat in importance
-                        }
-                        
-                        # Sort data from highest impact to lowest
+                        dynamic_importance = {feat: abs(input_data.get(feat, 0)) * importance[feat] for feat in features if feat in importance}
                         sorted_features = sorted(dynamic_importance.items(), key=lambda x: x[1], reverse=False)
                         feats, impacts = zip(*sorted_features) if sorted_features else ([], [])
-                        
-                        # Total impact for percentage calculation
                         total_impact = sum(impacts) if sum(impacts) > 0 else 1
                         percentages = [(val / total_impact) * 100 for val in impacts]
 
-                        # Create a premium dark-themed plot
                         fig, ax = plt.subplots(figsize=(7, 3.5))
-                        fig.patch.set_facecolor('#111827')  # Matches landing card color
+                        fig.patch.set_facecolor('#111827')
                         ax.set_facecolor('#111827')
-
-                        # Draw horizontal bars with a clean tech-blue/teal color palette
                         colors = ['#3B82F6' if p < 30 else '#6366F1' if p < 60 else '#10B981' for p in percentages]
                         bars = ax.barh(feats, percentages, color=colors, edgecolor='none', height=0.5)
 
-                        # Polish axes text and borders
                         ax.tick_params(colors='#9CA3AF', labelsize=10)
                         ax.spines['top'].set_visible(False)
                         ax.spines['right'].set_visible(False)
                         ax.spines['left'].set_color('#1F2937')
                         ax.spines['bottom'].set_color('#1F2937')
-                        ax.grid(axis='x', color='#1F2937', linestyle='--', alpha=0.5)
                         ax.set_xlabel("Relative Contribution Weight (%)", color='#9CA3AF', fontsize=10)
 
-                        # Add real-time value text tags inside/next to the bars
                         for bar in bars:
                             width = bar.get_width()
-                            ax.text(
-                                width + 1, 
-                                bar.get_y() + bar.get_height()/2, 
-                                f'{width:.1f}%', 
-                                va='center', 
-                                ha='left', 
-                                color='#F3F4F6', 
-                                fontsize=9, 
-                                fontweight='bold'
-                            )
-
-                        # Render the beautiful custom chart inside Streamlit
+                            ax.text(width + 1, bar.get_y() + bar.get_height()/2, f'{width:.1f}%', va='center', ha='left', color='#F3F4F6', fontsize=9, fontweight='bold')
                         st.pyplot(fig)
-                        
-                    else:
-                        st.warning("importance.pkl configuration mismatch.")
                 except Exception as chart_error:
                     st.warning(f"Feature importance rendering skipped: {chart_error}")
 
@@ -315,123 +257,54 @@ with col2:
             st.info("Adjust student parameters on the left pane and execute the analytical model pipeline.")
 
 # ==================================================
-# SCREEN 3: FIXED & ENHANCED PROBLEM-SOLVING CHATBOT
+# SCREEN 3: DATASET-DRIVEN AI COUNSELING CHATBOT (RAG)
 # ==================================================
 elif st.session_state.view_state == "chatbot":
-    from openai import OpenAI
+    st.subheader("💬 Advanced Dataset-Driven Counseling Copilot")
+    st.caption("🔒 Armed with a real-world institutional QA knowledge base to answer any student query dynamically.")
 
-    st.subheader("💬 Advanced AI Academic Counseling Copilot")
-    st.caption("🔒 Multi-turn conversation engine powered by Generative AI. All sessions are completely secure and private.")
-
-    # 1. Fetch the API Key securely from background environment secrets
-    openai_api_key = st.secrets.get("OPENAI_API_KEY", None)
-
-    # 2. Setup structural conversation history state (Using consistent 'chat_history' name)
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = [
-            {"role": "assistant", "content": "Welcome back. I am your specialized AI Academic Support Guide. Whether you are dealing with immense midterm exam stress, complex financial aid applications, or general academic burnout, I am here to help you break down the problem and build an actionable solution. What is the main hurdle on your mind today?"}
+            {"role": "assistant", "content": "Welcome back. I am your specialized AI Academic Support Guide. Tell me about any administrative hurdles, financial strain, or exam anxiety you are experiencing."}
         ]
 
-    # Render previous conversation loop smoothly
-    for msg in st.session_state.chat_history:
-        with st.chat_message(msg["role"]):
-            st.write(msg["content"])
+    for message in st.session_state.chat_history:
+        with st.chat_message(message["role"]):
+            st.write(message["content"])
 
-    # 3. Capture real-time user chat inputs
-    if user_prompt := st.chat_input("Explain your situation safely..."):
-        
-        # Display user input instantly
+    @st.cache_resource
+    def initialize_semantic_search():
+        if not os.path.exists("counseling_data.csv"):
+            return None, None, None
+        df_qa = pd.read_csv("counseling_data.csv")
+        from sklearn.feature_extraction.text import TfidfVectorizer
+        vectorizer = TfidfVectorizer(stop_words='english')
+        tfidf_matrix = vectorizer.fit_transform(df_qa['Questions'].astype(str))
+        return df_qa, vectorizer, tfidf_matrix
+
+    df_qa, vectorizer, tfidf_matrix = initialize_semantic_search()
+
+    if user_prompt := st.chat_input("Ask anything safely..."):
         with st.chat_message("user"):
             st.write(user_prompt)
         st.session_state.chat_history.append({"role": "user", "content": user_prompt})
 
-        # Process output using live LLM reasoning if the background secret exists
-        if openai_api_key:
-            try:
-                client = OpenAI(api_key=openai_api_key)
-                
-                system_instruction = (
-                    "You are 'EduGuard Copilot', an expert university counselor and real-world academic problem-solving AI. "
-                    "Your target audience consists of college students dealing with high stress, low grades, or financial hardship. "
-                    "DIRECTIONS: Be intensely empathetic, encouraging, and highly practical. Avoid generic platitudes. "
-                    "Instead, break problems down step-by-step. Provide structured roadmaps, suggest specific university support channels, "
-                    "and maintain an unconditionally safe space. Speak like a supportive, grounded academic mentor."
-                )
-
-                messages_payload = [{"role": "system", "content": system_instruction}] + st.session_state.chat_history
-
-                with st.chat_message("assistant"):
-                    with st.spinner("Analyzing situation and generating guidance..."):
-                        completion = client.chat.completions.create(
-                            model="gpt-4o-mini", 
-                            messages=messages_payload,
-                            temperature=0.7
-                        )
-                        ai_response = completion.choices[0].message.content
-                        st.write(ai_response)
-                        
-                st.session_state.chat_history.append({"role": "assistant", "content": ai_response})
-                st.rerun()  # Forces interface to refresh history layout smoothly
-                
-            except Exception as api_err:
-                st.error(f"API Connection Error: {api_err}")
-        
-        # 4. DEEP INTELLIGENT FALLBACK ENGINE: Handles any question fluidly if API key is missing
-        else:
-            with st.chat_message("assistant"):
-                with st.spinner("Processing contextual query..."):
-                    import time
-                    time.sleep(0.8) # Simulates realistic model processing delay
+        with st.chat_message("assistant"):
+            with st.spinner("Searching counseling database..."):
+                if df_qa is not None and vectorizer is not None:
+                    from sklearn.metrics.pairwise import cosine_similarity
+                    query_vector = vectorizer.transform([user_prompt])
+                    similarity_scores = cosine_similarity(query_vector, tfidf_matrix).flatten()
+                    best_match_idx = similarity_scores.argmax()
+                    highest_score = similarity_scores[best_match_idx]
                     
-                    user_lower = user_prompt.lower()
-                    
-                    # Group A: Academic & Performance Queries
-                    if any(w in user_lower for w in ["exam", "fail", "study", "grade", "marks", "daa", "oop", "assignment", "syllabus", "test"]):
-                        ai_response = (
-                            "### 📋 Personal Academic Recovery Roadmap\n\n"
-                            "I understand completely. Feeling overwhelmed or falling behind in dense subjects like engineering or data logic can cause massive anxiety. Let's tackle this methodically:\n\n"
-                            "* **Isolate the Friction Points:** Don't let a bad week make you feel like you're failing the whole branch. Break down your syllabus and isolate the exact concepts causing blocks (e.g., recursive algorithms or object inheritance).\n"
-                            "* **The 25-Minute Interval System:** Try the Pomodoro strategy to manage burnout. Study intensely with zero distractions for 25 minutes, then force yourself to step away for a 5-minute break. Repeat this three times.\n"
-                            "* **Peer Support Resources:** I highly recommend checking your university portal for the **Free Peer-Tutoring Registry**. Connecting with a senior student who cleared this exact class last semester can clarify concepts faster than any textbook.\n\n"
-                            "Would you like me to help you map out a simple, stress-free revision schedule for this upcoming week?"
-                        )
-                        
-                    # Group B: Financial, Fee, or Resource Queries
-                    elif any(w in user_lower for w in ["money", "fee", "pay", "scholarship", "debt", "financial", "balance", "cost", "loan"]):
-                        ai_response = (
-                            "### 🛡️ Financial Aid & Institutional Navigation Strategy\n\n"
-                            "Please remember that financial constraints are systemic challenges—they are situational logistics, and they do not define your capabilities or your future as a student. Let's look at active strategies to resolve this:\n\n"
-                            "* **Tuition Installment Deferral:** Many student management offices have standard frameworks to freeze late-payment penalties. You can file an official 'Installment Extension Request' via the Student Welfare desk to give your family more breathing room.\n"
-                            "* **Library Book Banks:** To save on immediate out-of-pocket material expenses, look into your campus library's book-bank registry to borrow core curriculum textbooks completely free for the entire semester.\n"
-                            "* **Proactive Outreach:** I strongly advise setting up a short, private chat with a financial aid administrator. Showing proactiveness early ensures the institution works with you to build bridges rather than blockades.\n\n"
-                            "Would you like me to generate a professional, well-worded email draft that you can customize and send to the department dean?"
-                        )
-                        
-                    # Group C: Burnout, Motivation, and Mental Wellness Queries
-                    elif any(w in user_lower for w in ["stress", "burnout", "tired", "quit", "depressed", "anxious", "mental", "lonely", "help"]):
-                        ai_response = (
-                            "### 🧠 Core Wellness & Balance Support\n\n"
-                            "It sounds like you are carrying a massive cognitive and emotional load right now. Please hear me: academic milestones matter, but your mental, emotional, and physical well-being is infinitely more important than any grade or credit checkpoint.\n\n"
-                            "* **Immediate Neural Reset:** Step away from your computer screens and phone notifications for at least 30 minutes today. Go for a brief walk or focus purely on getting 7-8 hours of sound sleep tonight to let your nervous system recover.\n"
-                            "* **De-Stigmatize the Pressure:** Feeling exhausted or wanting to give up is a normal response to prolonged stress, not a sign of personal weakness. You do not have to process this isolation alone.\n"
-                            "* **Next Practical Step:** I can guide you directly to our university's counseling center contacts for an informal, completely confidential talk with a supportive campus advisor who can help adjust your workload pressure.\n\n"
-                            "Would you like me to stay right here and help you write a simple checklist to declutter your tasks for tomorrow?"
-                        )
-                        
-                    # Group D: Catch-all Intelligent Response for any general questions
+                    if highest_score > 0.15:
+                        ai_response = f"### 🛡️ Verified Counseling Framework\n\n{df_qa['Answers'].iloc[best_match_idx]}"
                     else:
-                        ai_response = (
-                            "### 🤝 Problem-Solving Dynamic Workspace\n\n"
-                            f"Thank you for reaching out and sharing that. While I am a structural support assistant, I want to help you unpack exactly what's going on. \n\n"
-                            "When building solutions for university challenges, we look at three core pillars:\n"
-                            "1. **Operational Logistics:** Tracking deadlines, attendance, and scheduling variables.\n"
-                            "2. **Resource Allocation:** Accessing campus grants, peer groups, or software tools.\n"
-                            "3. **Stress Management:** Rebalancing routines to avoid cognitive burnout.\n\n"
-                            "To help me give you a highly customized, practical strategy, could you expand slightly on your situation? What is the biggest immediate hurdle blocking your progress right now?"
-                        )
-                        
-                    st.write(ai_response)
-            
-            # CRITICAL BUG FIX HERE: Append directly to 'chat_history' so the conversation preserves perfectly
-            st.session_state.chat_history.append({"role": "assistant", "content": ai_response})
-            st.rerun()  # Instantly update page array fields to reflect the new conversation state without losing history or causing duplication issues
+                        ai_response = "### 🤝 Adaptive System Guidance\n\nI couldn't find an exact matching scenario within our knowledge metrics, but you don't have to navigate this pressure alone. Would you like me to flag this secure session to request a priority, confidential meeting with campus student services?"
+                else:
+                    ai_response = "⚠️ **Database Notice:** Local file asset `counseling_data.csv` was not detected. Run your dataset pipeline generator first."
+                st.write(ai_response)
+        
+        st.session_state.chat_history.append({"role": "assistant", "content": ai_response})
+        st.rerun()
