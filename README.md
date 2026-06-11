@@ -44,6 +44,14 @@ Educational institutions frequently fail to identify early indicators of student
 * **Generative AI:** OpenAI API (`gpt-4o-mini`)
 
 ---
+---
+
+## 🌐 Cloud Deployment
+
+This application is optimized for persistent cloud environments and is actively hosted on the Streamlit Community Cloud network. 
+
+You can interact with our live production dashboard and test different risk scenarios in real-time here:
+👉 **[Live App Deployment Portal](https://studentdropoutpredictor-andaichatbotsupport-s7jc58wm4kff5jcijz.streamlit.app/)**
 
 ## 📂 Project Structure
 
@@ -54,4 +62,4 @@ Educational institutions frequently fail to identify early indicators of student
 ├── dropout_model.pkl   # Serialized trained Random Forest model asset
 ├── features.pkl        # Serialized feature sequence array
 └── importance.pkl      # Serialized feature weight coefficients dictionary
-## Link of deployed project - https://studentdropoutpredictor-andaichatbotsupport-s7jc58wm4kff5jcijz.streamlit.app/
+---
