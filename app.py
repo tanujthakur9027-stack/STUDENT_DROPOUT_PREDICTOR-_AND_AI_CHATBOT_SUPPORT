@@ -109,25 +109,64 @@ if model is None:
     st.stop()
 
 # --------------------------------------------------
-# 4. PERSISTENT SYSTEM NAVIGATION BLOCK
+# 4. PERSISTENT SYSTEM NAVIGATION BLOCK (Fixed)
 # --------------------------------------------------
+# Explicitly list your workflow views to map indexes
+modes = ["Welcome Portal Cover", "Counselor Dashboard & Risk Evaluator", "Student Safe-Space Chatbot"]
+
 if "view_state" not in st.session_state:
-    st.session_state.view_state = "welcome"
+    st.session_state.view_state = "Welcome Portal Cover"
+
+# Define a clean callback utility for the entry button
+def enter_dashboard_callback():
+    st.session_state.view_state = "Counselor Dashboard & Risk Evaluator"
+
+# Determine the dynamic index of the sidebar based on session state
+try:
+    default_sidebar_index = modes.index(st.session_state.view_state)
+except ValueError:
+    default_sidebar_index = 0
 
 st.sidebar.header("⚙️ System Control Center")
+
+# Force the radio menu to reflect state updates dynamically using the index parameter
 app_mode = st.sidebar.radio(
     "Navigate Workspace",
-    ["Welcome Portal Cover", "Counselor Dashboard & Risk Evaluator", "Student Safe-Space Chatbot"]
+    modes,
+    index=default_sidebar_index
 )
 
-# Bind navigation selections cleanly to session memory parameters
-if app_mode == "Welcome Portal Cover":
-    st.session_state.view_state = "welcome"
-elif app_mode == "Counselor Dashboard & Risk Evaluator":
-    st.session_state.view_state = "dashboard"
-elif app_mode == "Student Safe-Space Chatbot":
-    st.session_state.view_state = "chatbot"
+# Update session state if the user manually clicks the sidebar menu options
+if app_mode != st.session_state.view_state:
+    st.session_state.view_state = app_mode
 
+# ==================================================
+# SCREEN 1: WELCOME PORTAL COVER (Fixed)
+# ==================================================
+if st.session_state.view_state == "Welcome Portal Cover":
+    st.markdown("<br><br><br>", unsafe_allow_html=True)
+    st.markdown("""
+    <div class="landing-card">
+        <div style='font-size: 55px; margin-bottom: 15px;'>🛡️</div>
+        <div class="gradient-title">AI Dropout Prediction<br>& Counseling System</div>
+        <div class="subtext">
+            Empowering educational institutions with predictive intelligence and 
+            compassionate early-intervention strategies to maximize student retention.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    c1, c2, c3 = st.columns([1, 0.8, 1])
+    with c2:
+        # Using the on_click callback guarantees the state locks before the page updates
+        if st.button("ENTER DASHBOARD SYSTEM", use_container_width=True, on_click=enter_dashboard_callback):
+            st.rerun()
+
+# ==================================================
+# SCREEN 2: COUNSELOR DASHBOARD & RISK EVALUATOR
+# ==================================================
+elif st.session_state.view_state == "Counselor Dashboard & Risk Evaluator":
 # ==================================================
 # SCREEN 1: WELCOME PORTAL COVER
 # ==================================================
