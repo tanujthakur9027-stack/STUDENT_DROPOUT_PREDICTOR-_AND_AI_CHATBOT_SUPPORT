@@ -6,6 +6,8 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 
 import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
 import pickle
 import os
 
