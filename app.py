@@ -109,7 +109,7 @@ if model is None:
     st.stop()
 
 # --------------------------------------------------
-# 4. PERSISTENT SYSTEM NAVIGATION BLOCK (Flawless Alignment)
+# 4. PERSISTENT SYSTEM NAVIGATION BLOCK
 # --------------------------------------------------
 modes = ["Welcome Portal Cover", "Counselor Dashboard & Risk Evaluator", "Student Safe-Space Chatbot"]
 
@@ -135,9 +135,8 @@ app_mode = st.sidebar.radio(
 if app_mode != st.session_state.view_state:
     st.session_state.view_state = app_mode
 
-
 # ==================================================
-# SCREEN 1: WELCOME PORTAL COVER (Line 173 Alignment Fix)
+# SCREEN 1: WELCOME PORTAL COVER
 # ==================================================
 if st.session_state.view_state == "Welcome Portal Cover":
     st.markdown("<br><br><br>", unsafe_allow_html=True)
@@ -159,7 +158,7 @@ if st.session_state.view_state == "Welcome Portal Cover":
             st.rerun()
 
 # ==================================================
-# SCREEN 2: COUNSELOR DASHBOARD & RISK EVALUATOR (Fixed Naming)
+# SCREEN 2: COUNSELOR DASHBOARD & RISK EVALUATOR
 # ==================================================
 elif st.session_state.view_state == "Counselor Dashboard & Risk Evaluator":
     st.markdown("<div style='background: linear-gradient(90deg, #A7F3D0 0%, #93C5FD 100%); height: 16px; border-radius: 4px; margin-bottom: 5px;'></div>", unsafe_allow_html=True)
@@ -167,9 +166,103 @@ elif st.session_state.view_state == "Counselor Dashboard & Risk Evaluator":
     st.markdown("<br>", unsafe_allow_html=True)
 
     col1, col2 = st.columns([1.1, 1], gap="large")
-# ... your existing inputs and analytics engine code ...
+
+    with col1:
+        input_data = {}
+        sub_col_left, sub_col_right = st.columns(2, gap="medium")
+        
+        with sub_col_left:
+            st.markdown('<div class="column-header">Academic Metrics</div>', unsafe_allow_html=True)
+            if "Age at enrollment" in features:
+                input_data["Age at enrollment"] = st.slider("Age at Enrollment", min_value=15, max_value=60, value=20)
+            if "Attendance_Rate" in features:
+                input_data["Attendance_Rate"] = st.slider("Class Attendance Rate (%)", min_value=0, max_value=100, value=85)
+            if "Curricular_units_1st_sem_grade" in features:
+                input_data["Curricular_units_1st_sem_grade"] = st.slider("1st Semester Grade Average (0-20 scale)", min_value=0, max_value=20, value=14)
+
+        with sub_col_right:
+            st.markdown('<div class="column-header">Financial & Support Status</div>', unsafe_allow_html=True)
+            if "Scholarship holder" in features:
+                s_choice = st.radio("Scholarship Holder", ["No", "Yes"], horizontal=True, key="scholarship_radio")
+                input_data["Scholarship holder"] = 1 if s_choice == "Yes" else 0
+            if "Debtor" in features:
+                d_choice = st.radio("Is Institutional Debtor", ["No", "Yes"], horizontal=True, key="debtor_radio")
+                input_data["Debtor"] = 1 if d_choice == "Yes" else 0
+            if "Gender" in features:
+                g_choice = st.radio("Demographic: Gender", ["Female", "Male"], horizontal=True, key="gender_radio")
+                input_data["Gender"] = 1 if g_choice == "Male" else 0
+
+        for feat in features:
+            if feat not in input_data:
+                input_data[feat] = 0.0
+
+        st.markdown("<br>", unsafe_allow_html=True)
+        analyze_btn = st.button("RUN PREDICTIVE ANALYSIS", use_container_width=True)
+
+    with col2:
+        st.markdown('<div class="column-header">Dynamic Analytics Engine</div>', unsafe_allow_html=True)
+
+        if analyze_btn:
+            try:
+                input_df = pd.DataFrame([input_data])[features]
+                if hasattr(model, "predict_proba"):
+                    risk_probability = model.predict_proba(input_df)[0][1] * 100
+                else:
+                    risk_probability = model.predict(input_df)[0] * 100
+
+                m1, m2 = st.columns(2)
+                m1.metric(label="Calculated Risk Score", value=f"{risk_probability:.1f}%")
+
+                if risk_probability < 35:
+                    m2.success("🟢 STABLE")
+                    st.success("Evaluation Signature: Low attrition risk markers. Maintain baseline institutional visibility.")
+                elif risk_probability < 70:
+                    m2.warning("🟡 MONITOR")
+                    st.warning("Evaluation Signature: Early warning telemetry active. Flag for soft checkpoint outreach.")
+                else:
+                    m2.error("🔴 CRITICAL")
+                    st.error("Evaluation Signature: Multi-vector threat signature match. Initiate prioritized emergency intervention.")
+                    st.info("### 🤖 AI Counselor Recommendations\n- Review financial obligations.\n- Coordinate urgent advisor-led 1-on-1 counseling window.")
+
+                # Custom XAI Matplotlib Dark Bar Chart Rendering
+                st.markdown("---")
+                st.markdown("### 📊 Personalized Feature Impact Analysis")
+                try:
+                    if isinstance(importance, dict):
+                        import matplotlib.pyplot as plt
+                        dynamic_importance = {feat: abs(input_data.get(feat, 0)) * importance[feat] for feat in features if feat in importance}
+                        sorted_features = sorted(dynamic_importance.items(), key=lambda x: x[1], reverse=False)
+                        feats, impacts = zip(*sorted_features) if sorted_features else ([], [])
+                        total_impact = sum(impacts) if sum(impacts) > 0 else 1
+                        percentages = [(val / total_impact) * 100 for val in impacts]
+
+                        fig, ax = plt.subplots(figsize=(7, 3.5))
+                        fig.patch.set_facecolor('#111827')
+                        ax.set_facecolor('#111827')
+                        colors = ['#3B82F6' if p < 30 else '#6366F1' if p < 60 else '#10B981' for p in percentages]
+                        bars = ax.barh(feats, percentages, color=colors, edgecolor='none', height=0.5)
+
+                        ax.tick_params(colors='#9CA3AF', labelsize=10)
+                        ax.spines['top'].set_visible(False)
+                        ax.spines['right'].set_visible(False)
+                        ax.spines['left'].set_color('#1F2937')
+                        ax.spines['bottom'].set_color('#1F2937')
+                        ax.set_xlabel("Relative Contribution Weight (%)", color='#9CA3AF', fontsize=10)
+
+                        for bar in bars:
+                            width = bar.get_width()
+                            ax.text(width + 1, bar.get_y() + bar.get_height()/2, f'{width:.1f}%', va='center', ha='left', color='#F3F4F6', fontsize=9, fontweight='bold')
+                        st.pyplot(fig)
+                except Exception as chart_error:
+                    st.warning(f"Feature importance rendering skipped: {chart_error}")
+
+            except Exception as e:
+                st.error(f"Prediction Pipeline Error: {e}")
+        else:
+            st.info("Adjust student parameters on the left pane and execute the analytical model pipeline.")
+
 # ==================================================
-# SCREEN 3: STABILIZED DATASET-DRIVEN CHATBOT (RAG)
+# SCREEN 3: DATASET-DRIVEN AI COUNSELING CHATBOT (RAG - FIXED)
 # ==================================================
 elif st.session_state.view_state == "Student Safe-Space Chatbot":
     st.subheader("💬 Advanced Dataset-Driven Counseling Copilot")
@@ -191,7 +284,6 @@ elif st.session_state.view_state == "Student Safe-Space Chatbot":
     def initialize_semantic_search():
         if not os.path.exists("counseling_data.csv"):
             return None, None, None
-        
         df_qa = pd.read_csv("counseling_data.csv")
         from sklearn.feature_extraction.text import TfidfVectorizer
         vectorizer = TfidfVectorizer(stop_words='english')
@@ -205,32 +297,34 @@ elif st.session_state.view_state == "Student Safe-Space Chatbot":
         # Append user text to persistent state arrays instantly
         st.session_state.chat_history.append({"role": "user", "content": user_prompt})
         
-        # Display the user's text on screen immediately
-        with st.chat_message("user"):
-            st.write(user_prompt)
-
-        # Generate the predictive data frame response block
-        with st.chat_message("assistant"):
-            with st.spinner("Searching counseling database..."):
-                if df_qa is not None and vectorizer is not None:
-                    from sklearn.metrics.pairwise import cosine_similarity
-                    
-                    # Mathematical Vectorization matching pipeline
-                    query_vector = vectorizer.transform([user_prompt])
-                    similarity_scores = cosine_similarity(query_vector, tfidf_matrix).flatten()
-                    best_match_idx = similarity_scores.argmax()
-                    highest_score = similarity_scores[best_match_idx]
-                    
-                    # Threshold verification matching logic
-                    if highest_score > 0.15:
-                        ai_response = f"### 🛡️ Verified Counseling Framework\n\n{df_qa['Answers'].iloc[best_match_idx]}"
-                    else:
-                        ai_response = "### 🤝 Adaptive System Guidance\n\nI couldn't find an exact matching scenario within our knowledge metrics, but you don't have to navigate this pressure alone. Would you like me to flag this secure session to request a priority, confidential meeting with campus student services?"
-                else:
-                    ai_response = "⚠️ **Database Notice:** Local file asset `counseling_data.csv` was not detected. Please execute `python fetch_chatbot_data.py` in your terminal first."
-                
-                st.write(ai_response)
-        
-        # Store response and refresh the page smoothly to preserve conversation tracking
-        st.session_state.chat_history.append({"role": "assistant", "content": ai_response})
+        # Force a rerun to display the user's text on screen immediately
         st.rerun()
+
+# 5. Handle AI response processing block if user just sent a prompt
+if "chat_history" in st.session_state and len(st.session_state.chat_history) > 0 and st.session_state.chat_history[-1]["role"] == "user":
+    user_prompt = st.session_state.chat_history[-1]["content"]
+    
+    with st.chat_message("assistant"):
+        with st.spinner("Searching counseling database..."):
+            if df_qa is not None and vectorizer is not None:
+                from sklearn.metrics.pairwise import cosine_similarity
+                
+                # Mathematical Vectorization matching pipeline
+                query_vector = vectorizer.transform([user_prompt])
+                similarity_scores = cosine_similarity(query_vector, tfidf_matrix).flatten()
+                best_match_idx = similarity_scores.argmax()
+                highest_score = similarity_scores[best_match_idx]
+                
+                # Threshold verification matching logic
+                if highest_score > 0.15:
+                    ai_response = f"### 🛡️ Verified Counseling Framework\n\n{df_qa['Answers'].iloc[best_match_idx]}"
+                else:
+                    ai_response = "### 🤝 Adaptive System Guidance\n\nI couldn't find an exact matching scenario within our knowledge metrics, but you don't have to navigate this pressure alone. Would you like me to flag this secure session to request a priority, confidential meeting with campus student services?"
+            else:
+                ai_response = "⚠️ **Database Notice:** Local file asset `counseling_data.csv` was not detected. Please execute `python fetch_chatbot_data.py` in your terminal first."
+            
+            st.write(ai_response)
+    
+    # Store response and refresh the page smoothly to preserve conversation tracking
+    st.session_state.chat_history.append({"role": "assistant", "content": ai_response})
+    st.rerun()
