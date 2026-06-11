@@ -159,11 +159,15 @@ if st.session_state.view_state == "Welcome Portal Cover":
             st.rerun()
 
 # ==================================================
-# SCREEN 2: COUNSELOR DASHBOARD & RISK EVALUATOR
+# SCREEN 2: COUNSELOR DASHBOARD & RISK EVALUATOR (Fixed Naming)
 # ==================================================
 elif st.session_state.view_state == "Counselor Dashboard & Risk Evaluator":
     st.markdown("<div style='background: linear-gradient(90deg, #A7F3D0 0%, #93C5FD 100%); height: 16px; border-radius: 4px; margin-bottom: 5px;'></div>", unsafe_allow_html=True)
-    # ... rest of your counselor dashboard code stays here ...
+    st.markdown("<p style='text-align: center; color: #9CA3AF; font-size: 13px;'>Fill in the precise academic and behavioral metrics below for analysis</p>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    col1, col2 = st.columns([1.1, 1], gap="large")
+# ... your existing inputs and analytics engine code ...
 # ==================================================
 # SCREEN 3: STABILIZED DATASET-DRIVEN CHATBOT (RAG)
 # ==================================================
