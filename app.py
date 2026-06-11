@@ -316,18 +316,17 @@ elif st.session_state.view_state == "dashboard":
             st.info("Adjust student parameters on the left pane and execute the analytical model pipeline.")
 
 # ==================================================
-# SCREEN 3: ADVANCED PROBLEM-SOLVING AI CHATBOT
+# SCREEN 3: SECURE PROBLEM-SOLVING AI CHATBOT
 # ==================================================
 elif st.session_state.view_state == "chatbot":
     from openai import OpenAI
 
-    st.subheader(" Advanced AI Academic Counseling Copilot")
-    st.caption(" Multi-turn conversation engine powered by Generative AI. All sessions are confidential and secure.")
+    st.subheader("💬 Advanced AI Academic Counseling Copilot")
+    st.caption("🔒 Multi-turn conversation engine powered by Generative AI. All sessions are completely secure and private.")
 
-    # 1. Initialize safe fallback API Key input in the sidebar for the hackathon presentation
-    st.sidebar.markdown("---")
-    st.sidebar.subheader("🔑 API Authentication")
-    openai_api_key = st.sidebar.text_input("OpenAI API Key", type="password", help="Enter your OpenAI API key to power the live ChatGPT conversation model.")
+    # 1. Fetch the API Key securely from background environment secrets
+    # It checks if a secret key exists; if not, it cleanly falls back to None
+    openai_api_key = st.secrets.get("OPENAI_API_KEY", None)
 
     # 2. Setup structural conversation history state
     if "chat_history" not in st.session_state:
@@ -341,36 +340,32 @@ elif st.session_state.view_state == "chatbot":
             st.write(msg["content"])
 
     # 3. Capture real-time user chat inputs
-    if user_prompt := st.chat_input("Explain your situation safely... (e.g., 'I am failing my data structures course and feel completely lost')"):
+    if user_prompt := st.chat_input("Explain your situation safely... (e.g., 'I am failing my data structures course')"):
         
         # Display user input instantly
         with st.chat_message("user"):
             st.write(user_prompt)
         st.session_state.chat_history.append({"role": "user", "content": user_prompt})
 
-        # Process output using live LLM reasoning if the API Key is provided
+        # Process output using live LLM reasoning if the background secret exists
         if openai_api_key:
             try:
                 client = OpenAI(api_key=openai_api_key)
                 
-                # Construct an advanced System Prompt to enforce an empathetic, expert counseling persona
                 system_instruction = (
                     "You are 'EduGuard Copilot', an expert university counselor and real-world academic problem-solving AI. "
                     "Your target audience consists of college students dealing with high stress, low grades, or financial hardship. "
                     "DIRECTIONS: Be intensely empathetic, encouraging, and highly practical. Avoid generic platitudes. "
-                    "Instead, break problems down step-by-step. Provide structured roadmaps, suggest specific university support channels "
-                    "(e.g., peer-tutoring, student welfare departments, mental health services), and maintain an unconditionally safe space. "
-                    "Never sound like a rigid machine; speak like a supportive, grounded academic mentor."
+                    "Instead, break problems down step-by-step. Provide structured roadmaps, suggest specific university support channels, "
+                    "and maintain an unconditionally safe space. Speak like a supportive, grounded academic mentor."
                 )
 
-                # Prepare the payload including full memory context
                 messages_payload = [{"role": "system", "content": system_instruction}] + st.session_state.chat_history
 
                 with st.chat_message("assistant"):
                     with st.spinner("Analyzing situation and generating guidance..."):
-                        # Execute API Call using standard ChatGPT models
                         completion = client.chat.completions.create(
-                            model="gpt-4o-mini",  # Fast, highly cost-effective model choice for hackathons
+                            model="gpt-4o-mini", 
                             messages=messages_payload,
                             temperature=0.7
                         )
@@ -382,36 +377,35 @@ elif st.session_state.view_state == "chatbot":
             except Exception as api_err:
                 st.error(f"API Connection Error: {api_err}")
         
-        # 4. ROBUST FALLBACK ENGINE: If no API key is provided on stage, run a smart contextual simulation
+        # 4. ROBUST FALLBACK ENGINE: If no key is configured yet, run the smart contextual simulation
         else:
             with st.chat_message("assistant"):
                 with st.spinner("Processing contextual query..."):
                     import time
-                    time.sleep(1) # Simulates network latency for realistic demo presentation
+                    time.sleep(1) 
                     
                     user_lower = user_prompt.lower()
                     if any(w in user_lower for w in ["exam", "fail", "study", "grade", "marks", "daa", "oop"]):
                         ai_response = (
                             "### 📋 Personal Recovery Roadmap\n\n"
                             "I hear you, and feeling lost when facing complex subjects is incredibly common. Let's tackle this methodically:\n\n"
-                            "1. **Isolate the Weak Links:** Don't view the whole course as a failure. Identify the exact modules causing friction (e.g., Dynamic Programming in DAA or Pointers in OOP).\n"
-                            "2. **The 25-Minute Rule:** Avoid multi-hour cramming sessions. Use the Pomodoro technique—study hard for 25 minutes, then walk away for 5.\n"
-                            "3. **Leverage Institutional Capital:** I highly recommend checking the student portal for the **Free Peer-Tutoring Scheme**. Meeting with a senior who aced this class last semester can shift your perspective entirely.\n\n"
+                            "1. **Isolate the Weak Links:** Identify the exact modules causing friction (e.g., Dynamic Programming in DAA).\n"
+                            "2. **The 25-Minute Rule:** Use the Pomodoro technique—study hard for 25 minutes, then take a 5-minute break.\n"
+                            "3. **Leverage Institutional Capital:** Check the portal for the **Free Peer-Tutoring Scheme**. Meeting with a senior who aced this class can help immensely.\n\n"
                             "Would you like me to help you design a simplified, day-by-day revision schedule for this week?"
                         )
                     elif any(w in user_lower for w in ["money", "fee", "pay", "scholarship", "debt", "financial"]):
                         ai_response = (
                             "### 🛡️ Financial Support Action Plan\n\n"
-                            "Please remember that financial liabilities are systemic challenges—they do not define your worth or potential as a student. Let's review your strategic options:\n\n"
-                            "1. **Tuition Installment Waivers:** Most administrations don't publicize this, but the Student Welfare Office can freeze late payment penalties if you submit an official 'Installment Deferral Request'.\n"
-                            "2. **Book Bank & Emergency Stipends:** Verify if your library runs a textbook registry to avoid immediate out-of-pocket material expenses.\n"
-                            "3. **Next Steps:** I strongly advise gathering your academic records and setting an informal meeting with the financial aid desk. They are there to build bridges, not blockades.\n\n"
-                            "Would you like me to pre-draft a professional, polite email template you can copy and send to the department dean?"
+                            "Please remember that financial liabilities are systemic challenges—they do not define your potential. Let's review your strategic options:\n\n"
+                            "1. **Tuition Installment Waivers:** The Student Welfare Office can freeze late payment penalties if you submit an official request.\n"
+                            "2. **Book Bank Facilities:** Verify if your library runs a textbook registry to avoid out-of-pocket book expenses.\n\n"
+                            "Would you like me to pre-draft a professional, polite email template you can send to the department dean?"
                         )
                     else:
                         ai_response = (
-                            "Thank you for sharing that with me. Academic burnout and stress can cloud our next steps, but every roadblock has an operational solution. "
-                            "Let's break this down into actionable milestones together. Could you tell me a little bit more about what specific variable is creating the biggest bottleneck for you right now?"
+                            "Thank you for sharing that with me. Academic burnout can cloud our next steps, but every roadblock has a solution. "
+                            "Let's break this down into actionable milestones together. What specific variable is creating the biggest bottleneck for you right now?"
                         )
                     st.write(ai_response)
-            st.session_state.messages.append({"role": "assistant", "content": ai_response})
+            st.session_state.chat_history.append({"role": "assistant", "content": ai_response})
