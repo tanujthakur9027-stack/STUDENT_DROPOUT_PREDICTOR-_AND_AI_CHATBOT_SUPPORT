@@ -167,33 +167,11 @@ if st.session_state.view_state == "Welcome Portal Cover":
 # SCREEN 2: COUNSELOR DASHBOARD & RISK EVALUATOR
 # ==================================================
 elif st.session_state.view_state == "Counselor Dashboard & Risk Evaluator":
-# ==================================================
-# SCREEN 1: WELCOME PORTAL COVER
-# ==================================================
-if st.session_state.view_state == "welcome":
-    st.markdown("<br><br><br>", unsafe_allow_html=True)
-    st.markdown("""
-    <div class="landing-card">
-        <div style='font-size: 55px; margin-bottom: 15px;'>🛡️</div>
-        <div class="gradient-title">AI Dropout Prediction<br>& Counseling System</div>
-        <div class="subtext">
-            Empowering educational institutions with predictive intelligence and 
-            compassionate early-intervention strategies to maximize student retention.
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
+    st.markdown("<div style='background: linear-gradient(90deg, #A7F3D0 0%, #93C5FD 100%); height: 16px; border-radius: 4px; margin-bottom: 5px;'></div>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #9CA3AF; font-size: 13px;'>Fill in the precise academic and behavioral metrics below for analysis</p>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
-    c1, c2, c3 = st.columns([1, 0.8, 1])
-    with c2:
-        if st.button("ENTER DASHBOARD SYSTEM", use_container_width=True):
-            st.session_state.view_state = "dashboard"
-            st.rerun()
 
-# ==================================================
-# SCREEN 2: COUNSELOR DASHBOARD & RISK EVALUATOR
-# ==================================================
-elif st.session_state.view_state == "dashboard":
+    col1, col2 = st.columns([1.1, 1], gap="large")
     st.markdown("<div style='background: linear-gradient(90deg, #A7F3D0 0%, #93C5FD 100%); height: 16px; border-radius: 4px; margin-bottom: 5px;'></div>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center; color: #9CA3AF; font-size: 13px;'>Fill in the precise academic and behavioral metrics below for analysis</p>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
@@ -296,25 +274,29 @@ elif st.session_state.view_state == "dashboard":
             st.info("Adjust student parameters on the left pane and execute the analytical model pipeline.")
 
 # ==================================================
-# SCREEN 3: DATASET-DRIVEN AI COUNSELING CHATBOT (RAG)
+# SCREEN 3: STABILIZED DATASET-DRIVEN CHATBOT (RAG)
 # ==================================================
-elif st.session_state.view_state == "chatbot":
+elif st.session_state.view_state == "Student Safe-Space Chatbot":
     st.subheader("💬 Advanced Dataset-Driven Counseling Copilot")
     st.caption("🔒 Armed with a real-world institutional QA knowledge base to answer any student query dynamically.")
 
+    # 1. Initialize structural session conversation arrays if missing
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = [
             {"role": "assistant", "content": "Welcome back. I am your specialized AI Academic Support Guide. Tell me about any administrative hurdles, financial strain, or exam anxiety you are experiencing."}
         ]
 
+    # 2. Safely render the message vault on screen
     for message in st.session_state.chat_history:
         with st.chat_message(message["role"]):
             st.write(message["content"])
 
+    # 3. Load and cache the TF-IDF search engine subroutines
     @st.cache_resource
     def initialize_semantic_search():
         if not os.path.exists("counseling_data.csv"):
             return None, None, None
+        
         df_qa = pd.read_csv("counseling_data.csv")
         from sklearn.feature_extraction.text import TfidfVectorizer
         vectorizer = TfidfVectorizer(stop_words='english')
@@ -323,27 +305,37 @@ elif st.session_state.view_state == "chatbot":
 
     df_qa, vectorizer, tfidf_matrix = initialize_semantic_search()
 
+    # 4. Handle live conversational user input captures cleanly
     if user_prompt := st.chat_input("Ask anything safely..."):
+        # Append user text to persistent state arrays instantly
+        st.session_state.chat_history.append({"role": "user", "content": user_prompt})
+        
+        # Display the user's text on screen immediately
         with st.chat_message("user"):
             st.write(user_prompt)
-        st.session_state.chat_history.append({"role": "user", "content": user_prompt})
 
+        # Generate the predictive data frame response block
         with st.chat_message("assistant"):
             with st.spinner("Searching counseling database..."):
                 if df_qa is not None and vectorizer is not None:
                     from sklearn.metrics.pairwise import cosine_similarity
+                    
+                    # Mathematical Vectorization matching pipeline
                     query_vector = vectorizer.transform([user_prompt])
                     similarity_scores = cosine_similarity(query_vector, tfidf_matrix).flatten()
                     best_match_idx = similarity_scores.argmax()
                     highest_score = similarity_scores[best_match_idx]
                     
+                    # Threshold verification matching logic
                     if highest_score > 0.15:
                         ai_response = f"### 🛡️ Verified Counseling Framework\n\n{df_qa['Answers'].iloc[best_match_idx]}"
                     else:
                         ai_response = "### 🤝 Adaptive System Guidance\n\nI couldn't find an exact matching scenario within our knowledge metrics, but you don't have to navigate this pressure alone. Would you like me to flag this secure session to request a priority, confidential meeting with campus student services?"
                 else:
-                    ai_response = "⚠️ **Database Notice:** Local file asset `counseling_data.csv` was not detected. Run your dataset pipeline generator first."
+                    ai_response = "⚠️ **Database Notice:** Local file asset `counseling_data.csv` was not detected. Please execute `python fetch_chatbot_data.py` in your terminal first."
+                
                 st.write(ai_response)
         
+        # Store response and refresh the page smoothly to preserve conversation tracking
         st.session_state.chat_history.append({"role": "assistant", "content": ai_response})
         st.rerun()
