@@ -287,6 +287,7 @@ elif st.session_state.view_state == "Student Safe-Space Chatbot":
         df_qa = pd.read_csv("counseling_data.csv")
         from sklearn.feature_extraction.text import TfidfVectorizer
         vectorizer = TfidfVectorizer(stop_words='english')
+        # Transforms all conversational phrases into dynamic intent maps
         tfidf_matrix = vectorizer.fit_transform(df_qa['Questions'].astype(str))
         return df_qa, vectorizer, tfidf_matrix
 
