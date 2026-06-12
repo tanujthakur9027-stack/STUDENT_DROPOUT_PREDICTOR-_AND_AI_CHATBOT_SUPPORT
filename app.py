@@ -2,6 +2,9 @@ import streamlit as st
 import pandas as pd
 import pickle
 import os
+import smtplib
+from email.mime.text import MIMEText
+from twilio.rest import Client
 
 # --------------------------------------------------
 # 1. INITIAL DESIGN CONFIGURATION
@@ -15,10 +18,7 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-    /* Global Application Theme Customizations */
     .stApp { background-color: #0B0F19; color: #F3F4F6; }
-    
-    /* Panel Formatting Card Frameworks */
     .dashboard-header {
         font-size: 28px; font-weight: 700; color: #10B981;
         margin-bottom: 20px; border-bottom: 2px solid #1F2937; padding-bottom: 8px;
@@ -32,8 +32,10 @@ st.markdown("""
         padding: 25px; margin-bottom: 20px; min-height: 150px;
     }
     .intervention-text { color: #F59E0B; font-size: 16px; font-weight: 500; line-height: 1.6; }
-    
-    /* Button Form Factors */
+    .pipeline-alert {
+        background: #1E293B; border-left: 4px solid #3B82F6;
+        border-radius: 8px; padding: 15px; margin-top: 15px; margin-bottom: 15px;
+    }
     div.stButton > button:first-child {
         background: #1F2937 !important; color: #F3F4F6 !important;
         border: 1px solid #374151 !important; font-weight: 600 !important;
@@ -61,18 +63,62 @@ def load_ai_assets():
 model, features, importance = load_ai_assets()
 
 # --------------------------------------------------
-# 3. SPLIT PAGE WORKSPACE SIDEBAR NAVIGATION
+# 3. PRODUCTION AUTOMATED LIVE NOTIFICATION PIPELINES
+# --------------------------------------------------
+def dispatch_real_email(recipient_email, risk_score):
+    """Fires a live SMTP server warning alert email directly to the counselor."""
+    # SENDER CONFIGURATION (Use your email credentials)
+    sender_email = "tanujthakur9027@gmail.com" 
+    sender_password = "wcrl zrsx vzog razs" # Generated via Google Account Settings
+    
+    msg_contents = f"URGENT SYSTEM INTERVENTION: A student's retention index has reached {risk_score:.1f}%. Please initiate immediate contact protocols."
+    
+    msg = MIMEText(msg_contents)
+    msg['Subject'] = f"🚨 EduGuard AI: Critical Risk Alert ({risk_score:.1f}%)"
+    msg['From'] = sender_email
+    msg['To'] = recipient_email
+    
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(sender_email, sender_password)
+            server.sendmail(sender_email, recipient_email, msg.as_string())
+        return True
+    except Exception as e:
+        st.sidebar.warning(f"SMTP Log Network Skip: {e}")
+        return False
+
+def dispatch_real_sms(recipient_phone, risk_score):
+    """Fires an active Twilio programmatic cellular network SMS text message."""
+    # Enter your credentials from the twilio.com dashboard console window
+    account_sid = "US258ab75133f1362029a0f20c562abb3b"
+    auth_token = "neeruthakur139@gmail.com"
+    twilio_number = "7599761602"
+    
+    msg_body = f"Hi! We noticed things have been intense this term. Remember free peer-tutoring networks and counselor advisors are open to chat anytime! We are here to support you."
+    
+    try:
+        client = Client(account_sid, auth_token)
+        message = client.messages.create(
+            body=msg_body,
+            from_=twilio_number,
+            to=recipient_phone
+        )
+        return True
+    except Exception as e:
+        st.sidebar.warning(f"Cellular Gateway Link Skip: {e}")
+        return False
+
+# --------------------------------------------------
+# 4. NAVIGATION BLOCK INTERFACE SELECTORS
 # --------------------------------------------------
 st.sidebar.title("🔮 EduGuard Control Panel")
 st.sidebar.markdown("---")
 
-# Separate into two explicit web page interfaces to prevent button conflict loops
 page_selection = st.sidebar.radio(
     "Select Workspace System:",
     ["🕵️ Counselor Dashboard", "🧘 Guided AI Intervention Desk"]
 )
 
-# Initialize global variable storage frameworks
 if "counseling_domain" not in st.session_state: st.session_state.counseling_domain = None
 if "specific_pain_point" not in st.session_state: st.session_state.specific_pain_point = None
 if "user_understanding" not in st.session_state: st.session_state.user_understanding = None
@@ -107,30 +153,35 @@ if page_selection == "🕵️ Counselor Dashboard":
         if features:
             for feat in features:
                 if feat not in input_data: input_data[feat] = 0.0
+                
+        # --- PRODUCTION ROUTING LIVE COMMUNICATIONS SETTINGS ---
+        st.markdown("---")
+        st.markdown("### 📲 Live Communication Dispatches Config")
+        alert_threshold = st.slider("Configure System Risk Trigger Threshold (%)", 50, 95, 70)
+        counselor_email = st.text_input("Counselor Real-world Destination Email", "your-email@domain.com")
+        student_phone = st.text_input("Student Live Phone Registry Number (With Country Code)", "+91XXXXXXXXXX")
 
     with col_analytics:
         st.markdown("### 📊 Calculated Machine Learning Output")
         
-        # Calculate real-time probabilities from your model asset
         if model and features:
             input_df = pd.DataFrame([input_data])[features]
             risk_probability = model.predict_proba(input_df)[0][1] * 100
         else:
             risk_probability = 25.0
             
-        # FIXED RISK LOGIC: Maps probability percentage correctly to semantic status tags
         if risk_probability < 35:
             status_text = f"🟢 LOW RISK ({risk_probability:.1f}%)"
             alert_color = "#10B981"
             description = "Student displays normal retention telemetry. Maintain baseline monitoring."
-        elif risk_probability < 70:
+        elif risk_probability < alert_threshold:
             status_text = f"🟡 MONITOR ({risk_probability:.1f}%)"
             alert_color = "#F59E0B"
-            description = "Mild behavioral or academic degradation noted. Flag for secondary outreach checks."
+            description = "Mild behavioral or academic degradation noted."
         else:
             status_text = f"🔴 CRITICAL HIGH RISK ({risk_probability:.1f}%)"
             alert_color = "#EF4444"
-            description = "Multi-vector risk indicators confirmed. Trigger emergency immediate counselor notification."
+            description = "Multi-vector risk indicators confirmed. Outbound message parameters active."
 
         st.markdown(f"""
         <div class="metric-card">
@@ -139,6 +190,31 @@ if page_selection == "🕵️ Counselor Dashboard":
             <p style="color: #D1D5DB; font-size: 14px; margin-top: 8px;">{description}</p>
         </div>
         """, unsafe_allow_html=True)
+
+        # --- LIVE PRODUCTION DISPATCH EXECUTION TRIGGER ROUTE ---
+        if risk_probability >= alert_threshold:
+            st.markdown(f"""
+            <div class="pipeline-alert">
+                <span style="color: #3B82F6; font-weight: 700;">⚡ Network Gateway Engaged!</span>
+                <p style="font-size: 13px; color: #9CA3AF; margin-top: 5px; margin-bottom: 0;">
+                    Outbound communications fired via API pipeline structures.
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # 1. Fire Real SMTP Email Process Link
+            email_fired = dispatch_real_email(counselor_email, risk_probability)
+            if email_fired:
+                st.error(f"📬 **Real Email Alert successfully sent to `{counselor_email}`!**")
+            else:
+                st.caption("ℹ️ Email logged mock format layout (Add active login passwords to enable real transmission).")
+                
+            # 2. Fire Real Cellular Network SMS Route Link
+            sms_fired = dispatch_real_sms(student_phone, risk_probability)
+            if sms_fired:
+                st.success(f"📱 **Real SMS Nudge successfully pushed to `{student_phone}`!**")
+            else:
+                st.caption("ℹ️ Cellular transmission fallback executed (Enter Twilio API Tokens to route real texts).")
 
         # Render XAI Feature Importance Graph
         if isinstance(importance, dict):
@@ -150,13 +226,11 @@ if page_selection == "🕵️ Counselor Dashboard":
                 total_impact = sum(impacts) if sum(impacts) > 0 else 1
                 percentages = [(val / total_impact) * 100 for val in impacts]
 
-                fig, ax = plt.subplots(figsize=(6, 2.8))
-                fig.patch.set_facecolor('#111827')
-                ax.set_facecolor('#111827')
+                fig, ax = plt.subplots(figsize=(6, 2.2))
+                fig.patch.set_facecolor('#111827'); ax.set_facecolor('#111827')
                 ax.barh(feats, percentages, color=alert_color, height=0.4)
                 ax.tick_params(colors='#9CA3AF', labelsize=10)
-                ax.spines['top'].set_visible(False)
-                ax.spines['right'].set_visible(False)
+                ax.spines['top'].set_visible(False); ax.spines['right'].set_visible(False)
                 st.pyplot(fig)
             except Exception as e:
                 st.caption(f"Feature weighting vector skipped: {e}")
@@ -167,7 +241,6 @@ if page_selection == "🕵️ Counselor Dashboard":
 elif page_selection == "🧘 Guided AI Intervention Desk":
     st.markdown('<div class="dashboard-header">🔮 Guided AI Intervention Desk</div>', unsafe_allow_html=True)
     
-    # Reset helper function for state switching mechanics
     def reset_intervention_flow():
         st.session_state.counseling_domain = None
         st.session_state.specific_pain_point = None
@@ -178,33 +251,29 @@ elif page_selection == "🧘 Guided AI Intervention Desk":
     with col_chat_box:
         st.markdown('<div class="intervention-box">', unsafe_allow_html=True)
         
-        # Phase A: Starting state
         if st.session_state.counseling_domain is None:
             st.markdown("""
             <p class="intervention-text">
                 👋 <strong>Hello! I am your AI Student Counselor Companion.</strong><br><br>
-                I am here to build a customized, stress-free path forward for you.<br><br>
                 To begin, look at the choice selectors on the right panel and choose the <strong>Primary Domain Context</strong> you want to sort out today.
             </p>
             """, unsafe_allow_html=True)
             
-        # Phase B: Domain selected, waiting on explicit sub-issue details
         elif st.session_state.counseling_domain and st.session_state.specific_pain_point is None:
             st.markdown(f"""
             <p class="intervention-text">
                 🎯 <strong>Active Path established: {st.session_state.counseling_domain} Support Hub.</strong><br><br>
-                Great. Let's isolate the issue. Move to the right panel and select the <strong>Specific Pain-Point Module</strong> creating the biggest bottleneck for you right now.
+                Select the <strong>Specific Pain-Point Module</strong> creating the biggest bottleneck for you right now.
             </p>
             """, unsafe_allow_html=True)
             
-        # Phase C: Strategy output with user verification check active
         elif st.session_state.specific_pain_point and st.session_state.user_understanding is None:
             if st.session_state.specific_pain_point == "Peer Pressure & Comparison":
-                solution_text = "<strong>Strategy Roadmap:</strong> Stop comparing your raw internal drafts to everyone else's curated highlights. Take a 7-day break from technical LinkedIn postings and focus entirely on clean, local code repository updates."
+                solution_text = "<strong>Strategy Roadmap:</strong> Stop comparing your raw internal drafts to everyone else's highlights. Take a 7-day break from technical LinkedIn postings and focus entirely on clean, local code repository updates."
             elif st.session_state.specific_pain_point == "Part-time Jobs / Paid Internships":
                 solution_text = "<strong>Strategy Roadmap:</strong> Clean up your local portfolio, structure your resume using clean professional layout templates, and prioritize cold-messaging startup founders directly on LinkedIn for active work opportunities."
             else:
-                solution_text = "<strong>Strategy Roadmap:</strong> Do not let a dense syllabus overwhelm you. Use the Pomodoro method (25-minute study intervals) to isolate weak chapters. Practice manual algorithm layout tracing on physical notebooks daily to master conceptual loops."
+                solution_text = "<strong>Strategy Roadmap:</strong> Use the Pomodoro method (25-minute study intervals) to isolate weak chapters. Practice manual algorithm layout tracing on physical notebooks daily to master conceptual loops."
                 
             st.markdown(f"""
             <p class="intervention-text">
@@ -214,7 +283,6 @@ elif page_selection == "🧘 Guided AI Intervention Desk":
             </p>
             """, unsafe_allow_html=True)
             
-        # Phase D: Success conclusion
         elif st.session_state.user_understanding == "Yes, completely clear!":
             st.markdown("""
             <p class="intervention-text">
@@ -236,7 +304,6 @@ elif page_selection == "🧘 Guided AI Intervention Desk":
     with col_chat_inputs:
         st.markdown("### 🕹️ Interactive Decision Trees")
         
-        # Step 1: Core Domain Selections
         domain_options = ["Studies", "Stress & Mental Well-being", "Finances"]
         d_idx = None if st.session_state.counseling_domain is None else domain_options.index(st.session_state.counseling_domain)
         
@@ -250,7 +317,6 @@ elif page_selection == "🧘 Guided AI Intervention Desk":
             st.session_state.counseling_domain = sel_domain
             st.rerun()
 
-        # Step 2: Custom Sub-Pain Point Selection
         if st.session_state.counseling_domain is not None:
             st.markdown("---")
             if st.session_state.counseling_domain == "Studies":
@@ -272,7 +338,6 @@ elif page_selection == "🧘 Guided AI Intervention Desk":
                 st.session_state.specific_pain_point = sel_pain
                 st.rerun()
 
-        # Step 3: Resolution Status Feedback Checks
         if st.session_state.specific_pain_point is not None:
             st.markdown("---")
             understand_options = ["Yes, completely clear!", "No, I need human escalation support"]
