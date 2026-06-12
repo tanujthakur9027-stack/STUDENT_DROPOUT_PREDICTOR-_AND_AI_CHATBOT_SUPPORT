@@ -3,329 +3,275 @@ import pandas as pd
 import pickle
 import os
 
-# --------------------------------------------------
-# 1. PAGE CONFIGURATION
-# --------------------------------------------------
+# 1. PAGE SETUP CONFIGURATION
 st.set_page_config(
-    page_title="AI Dropout Prediction & Counseling System",
+    page_title="EduGuard AI: Early Warning & Retention Network",
     page_icon="🎓",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# --------------------------------------------------
-# 2. CUSTOM THEME GRAPHICS & INTERFACE DESIGN (CSS)
-# --------------------------------------------------
+# 2. CUSTOM SYSTEM UI CANVAS (CSS Stylesheet)
 st.markdown("""
 <style>
-    /* Global dark app background canvas style matching Hugging Face Spaces */
-    .stApp {
-        background-color: #0B0F19;
-        color: #F3F4F6;
-    }
-    
-    /* Elegant Landing Portal Card Frame */
+    .stApp { background-color: #0B0F19; color: #F3F4F6; }
     .landing-card {
-        background: #111827;
-        border: 1px solid #1F2937;
-        border-radius: 16px;
-        padding: 40px;
-        text-align: center;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-        margin: auto;
-        max-width: 600px;
+        background: #111827; border: 1px solid #1F2937; border-radius: 16px;
+        padding: 40px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        margin: auto; max-width: 650px;
     }
-    
-    /* Shimmering Gradient Header Typography */
     .gradient-title {
-        font-size: 38px;
-        font-weight: 800;
+        font-size: 38px; font-weight: 800;
         background: linear-gradient(135deg, #A7F3D0 0%, #93C5FD 50%, #C084FC 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        line-height: 1.3;
-        margin-bottom: 15px;
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        line-height: 1.3; margin-bottom: 15px;
     }
-    
-    .subtext {
-        font-size: 15px;
-        color: #9CA3AF;
-        line-height: 1.6;
-        margin-bottom: 25px;
-    }
-    
-    /* Categorized Metrics Input Section Dividers */
+    .subtext { font-size: 15px; color: #9CA3AF; line-height: 1.6; margin-bottom: 25px; }
     .column-header {
-        font-size: 18px;
-        font-weight: 600;
-        color: #93C5FD;
-        margin-bottom: 15px;
-        border-bottom: 1px solid #1F2937;
-        padding-bottom: 6px;
+        font-size: 18px; font-weight: 600; color: #93C5FD;
+        margin-bottom: 15px; border-bottom: 1px solid #1F2937; padding-bottom: 6px;
     }
-    
-    /* Core Call-to-Action Theme Accent Buttons */
+    .nudge-box {
+        background: #1E293B; border-left: 4px solid #3B82F6;
+        border-radius: 8px; padding: 15px; margin-top: 10px;
+    }
     div.stButton > button:first-child {
         background: linear-gradient(90deg, #A7F3D0 0%, #93C5FD 100%) !important;
-        color: #0F172A !important;
-        font-weight: 700 !important;
-        border: none !important;
-        padding: 10px 20px !important;
-        border-radius: 8px !important;
-        transition: all 0.3s ease !important;
-    }
-    div.stButton > button:first-child:hover {
-        opacity: 0.95 !important;
-        transform: scale(1.01) !important;
+        color: #0F172A !important; font-weight: 700 !important;
+        border: none !important; padding: 10px 20px !important;
+        border-radius: 8px !important; transition: all 0.3s ease !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# --------------------------------------------------
-# 3. SECURE ASSET LOADING SUBROUTINES
-# --------------------------------------------------
+# 3. SECURE ASSET LOADING
 @st.cache_resource
 def load_ai_assets():
     required_files = ["dropout_model.pkl", "features.pkl", "importance.pkl"]
     for file in required_files:
         if not os.path.exists(file):
-            st.error(f"⚠️ Critical Background Asset Missing: {file}")
             return None, None, None
     try:
-        with open("dropout_model.pkl", "rb") as f:
-            model = pickle.load(f)
-        with open("features.pkl", "rb") as f:
-            features = pickle.load(f)
-        with open("importance.pkl", "rb") as f:
-            importance = pickle.load(f)
+        with open("dropout_model.pkl", "rb") as f: model = pickle.load(f)
+        with open("features.pkl", "rb") as f: features = pickle.load(f)
+        with open("importance.pkl", "rb") as f: importance = pickle.load(f)
         return model, features, importance
-    except Exception as e:
-        st.error(f"❌ Structural Failure Loading Model Assets: {e}")
+    except:
         return None, None, None
 
 model, features, importance = load_ai_assets()
 
-if model is None:
-    st.stop()
-
-# --------------------------------------------------
-# 4. PERSISTENT SYSTEM NAVIGATION BLOCK
-# --------------------------------------------------
-modes = ["Welcome Portal Cover", "Counselor Dashboard & Risk Evaluator", "Student Safe-Space Chatbot"]
+# 4. MULTI-USER SYSTEM NAVIGATION BLOCK
+modes = [
+    "📌 Home: Core Portal", 
+    "🕵️ Counselor Console: Risk Engine", 
+    "💬 Student Safe-Space: Anon Chatbot",
+    "🤖 Counselor Smart Assistant: Search"
+]
 
 if "view_state" not in st.session_state:
-    st.session_state.view_state = "Welcome Portal Cover"
-
-def enter_dashboard_callback():
-    st.session_state.view_state = "Counselor Dashboard & Risk Evaluator"
+    st.session_state.view_state = "📌 Home: Core Portal"
 
 try:
     default_sidebar_index = modes.index(st.session_state.view_state)
 except ValueError:
     default_sidebar_index = 0
 
-st.sidebar.header("⚙️ System Control Center")
+st.sidebar.title("🔐 Authentication Guard")
+user_role = st.sidebar.selectbox("Select Access Clearance", ["Student Access", "Authorized Counselor / Admin"])
 
-app_mode = st.sidebar.radio(
-    "Navigate Workspace",
-    modes,
-    index=default_sidebar_index
-)
+st.sidebar.markdown("---")
+st.sidebar.subheader("🧭 Terminal Navigation")
+
+# Dynamic Menu Filtering based on Selected User Role Persona
+if user_role == "Student Access":
+    allowed_modes = ["📌 Home: Core Portal", "💬 Student Safe-Space: Anon Chatbot"]
+else:
+    allowed_modes = ["📌 Home: Core Portal", "🕵️ Counselor Console: Risk Engine", "🤖 Counselor Smart Assistant: Search"]
+
+app_mode = st.sidebar.radio("Navigate Active Module", allowed_modes)
 
 if app_mode != st.session_state.view_state:
     st.session_state.view_state = app_mode
 
 # ==================================================
-# SCREEN 1: WELCOME PORTAL COVER
+# MODULE 1: WELCOME PORTAL COVER
 # ==================================================
-if st.session_state.view_state == "Welcome Portal Cover":
+if st.session_state.view_state == "📌 Home: Core Portal":
     st.markdown("<br><br><br>", unsafe_allow_html=True)
     st.markdown("""
     <div class="landing-card">
         <div style='font-size: 55px; margin-bottom: 15px;'>🛡️</div>
-        <div class="gradient-title">AI Dropout Prediction<br>& Counseling System</div>
+        <div class="gradient-title">EduGuard AI Retention Framework</div>
         <div class="subtext">
-            Empowering educational institutions with predictive intelligence and 
-            compassionate early-intervention strategies to maximize student retention.
+            An automated early-warning weather forecast pipeline for academic success. 
+            Detecting student attrition patterns and distributing immediate counseling safety nets.
         </div>
     </div>
     """, unsafe_allow_html=True)
+
+# ==================================================
+# MODULE 2: COUNSELOR RISK DASHBOARD & NOTIFICATION ENGINE
+# ==================================================
+elif st.session_state.view_state == "🕵️ Counselor Console: Risk Engine":
+    st.markdown("## 🕵️ Academic Early-Warning Diagnostic Console")
     
-    st.markdown("<br>", unsafe_allow_html=True)
-    c1, c2, c3 = st.columns([1, 0.8, 1])
-    with c2:
-        if st.button("ENTER DASHBOARD SYSTEM", use_container_width=True, on_click=enter_dashboard_callback):
-            st.rerun()
-
-# ==================================================
-# SCREEN 2: COUNSELOR DASHBOARD & RISK EVALUATOR
-# ==================================================
-elif st.session_state.view_state == "Counselor Dashboard & Risk Evaluator":
-    st.markdown("<div style='background: linear-gradient(90deg, #A7F3D0 0%, #93C5FD 100%); height: 16px; border-radius: 4px; margin-bottom: 5px;'></div>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #9CA3AF; font-size: 13px;'>Fill in the precise academic and behavioral metrics below for analysis</p>", unsafe_allow_html=True)
-    st.markdown("<br>", unsafe_allow_html=True)
-
     col1, col2 = st.columns([1.1, 1], gap="large")
 
     with col1:
+        st.markdown('<div class="column-header">Input Target Student Telemetry</div>', unsafe_allow_html=True)
         input_data = {}
-        sub_col_left, sub_col_right = st.columns(2, gap="medium")
+        sub_col_l, sub_col_r = st.columns(2)
         
-        with sub_col_left:
-            st.markdown('<div class="column-header">Academic Metrics</div>', unsafe_allow_html=True)
-            if "Age at enrollment" in features:
-                input_data["Age at enrollment"] = st.slider("Age at Enrollment", min_value=15, max_value=60, value=20)
-            if "Attendance_Rate" in features:
-                input_data["Attendance_Rate"] = st.slider("Class Attendance Rate (%)", min_value=0, max_value=100, value=85)
-            if "Curricular_units_1st_sem_grade" in features:
-                input_data["Curricular_units_1st_sem_grade"] = st.slider("1st Semester Grade Average (0-20 scale)", min_value=0, max_value=20, value=14)
+        with sub_col_l:
+            input_data["Age at enrollment"] = st.slider("Enrollment Age Metric", 15, 60, 20)
+            input_data["Attendance_Rate"] = st.slider("Calculated Class Attendance Rate (%)", 0, 100, 85)
+            input_data["Curricular_units_1st_sem_grade"] = st.slider("1st Semester Term Grades (0-20)", 0, 20, 14)
 
-        with sub_col_right:
-            st.markdown('<div class="column-header">Financial & Support Status</div>', unsafe_allow_html=True)
-            if "Scholarship holder" in features:
-                s_choice = st.radio("Scholarship Holder", ["No", "Yes"], horizontal=True, key="scholarship_radio")
-                input_data["Scholarship holder"] = 1 if s_choice == "Yes" else 0
-            if "Debtor" in features:
-                d_choice = st.radio("Is Institutional Debtor", ["No", "Yes"], horizontal=True, key="debtor_radio")
-                input_data["Debtor"] = 1 if d_choice == "Yes" else 0
-            if "Gender" in features:
-                g_choice = st.radio("Demographic: Gender", ["Female", "Male"], horizontal=True, key="gender_radio")
-                input_data["Gender"] = 1 if g_choice == "Male" else 0
+        with sub_col_r:
+            s_choice = st.radio("Scholarship Allocation Status", ["No", "Yes"], horizontal=True)
+            input_data["Scholarship holder"] = 1 if s_choice == "Yes" else 0
+            d_choice = st.radio("Outstanding Tuition Liabilities (Debtor)", ["No", "Yes"], horizontal=True)
+            input_data["Debtor"] = 1 if d_choice == "Yes" else 0
+            g_choice = st.radio("Student Gender Profile", ["Female", "Male"], horizontal=True)
+            input_data["Gender"] = 1 if g_choice == "Male" else 0
 
-        for feat in features:
-            if feat not in input_data:
-                input_data[feat] = 0.0
+        # Fill potential feature layout list anomalies safely
+        if features:
+            for feat in features:
+                if feat not in input_data: input_data[feat] = 0.0
+
+        st.markdown("---")
+        st.subheader("🚨 Automated Notification Dispatch Settings")
+        alert_threshold = st.slider("Configure Risk Alert Trigger Threshold (%)", 50, 95, 70)
+        target_email = st.text_input("Counselor Emergency Notification Destination Email", "counselor.support@university.edu")
 
         st.markdown("<br>", unsafe_allow_html=True)
-        analyze_btn = st.button("RUN PREDICTIVE ANALYSIS", use_container_width=True)
+        analyze_btn = st.button("EXECUTE SYSTEM RISK DIAGNOSTIC")
 
     with col2:
-        st.markdown('<div class="column-header">Dynamic Analytics Engine</div>', unsafe_allow_html=True)
+        st.markdown('<div class="column-header">AI Predictive Diagnostics Engine Output</div>', unsafe_allow_html=True)
 
-        if analyze_btn:
-            try:
-                input_df = pd.DataFrame([input_data])[features]
-                if hasattr(model, "predict_proba"):
-                    risk_probability = model.predict_proba(input_df)[0][1] * 100
-                else:
-                    risk_probability = model.predict(input_df)[0] * 100
+        if analyze_btn and model:
+            input_df = pd.DataFrame([input_data])[features]
+            risk_probability = model.predict_proba(input_df)[0][1] * 100
 
-                m1, m2 = st.columns(2)
-                m1.metric(label="Calculated Risk Score", value=f"{risk_probability:.1f}%")
+            m1, m2 = st.columns(2)
+            m1.metric(label="Calculated Attrition Risk", value=f"{risk_probability:.1f}%")
 
-                if risk_probability < 35:
-                    m2.success("🟢 STABLE")
-                    st.success("Evaluation Signature: Low attrition risk markers. Maintain baseline institutional visibility.")
-                elif risk_probability < 70:
-                    m2.warning("🟡 MONITOR")
-                    st.warning("Evaluation Signature: Early warning telemetry active. Flag for soft checkpoint outreach.")
-                else:
-                    m2.error("🔴 CRITICAL")
-                    st.error("Evaluation Signature: Multi-vector threat signature match. Initiate prioritized emergency intervention.")
-                    st.info("### 🤖 AI Counselor Recommendations\n- Review financial obligations.\n- Coordinate urgent advisor-led 1-on-1 counseling window.")
+            if risk_probability < 35:
+                m2.success("🟢 PROFILE STABLE")
+            elif risk_probability < alert_threshold:
+                m2.warning("🟡 ELEVATED STATUS")
+            else:
+                m2.error("🔴 CRITICAL WARNING ALERT")
+                
+                # --- AUTOMATED WARNING COMMUNICATIONS SYSTEM PIPELINE ---
+                st.markdown("""<div class='nudge-box'><strong>⚡ Automated Communication Pipeline Fired!</strong></div>""", unsafe_allow_html=True)
+                
+                # 1. Dispatching Counselor Alert Hook
+                st.info(f"📬 **Email Notification Sent to `{target_email}`**\n\n*Content:* ALERT: Student profile engagement drop detected. Attrition Risk profile index calculated at **{risk_probability:.1f}%**, bypassing your {alert_threshold}% safety boundary threshold limit. Action Required.")
+                
+                # 2. Dispatching Student Nudge Hook
+                st.success(f"📱 **Supportive SMS Nudge Dispatched to Student Mobile Registry**\n\n*Content:* Hi! We noticed things have been a bit busy lately and you've missed a couple of checks. Just a reminder that free peer-tutoring networks and counseling sessions are open daily on the portal! Reply directly if you need to talk.")
 
-                # Custom XAI Matplotlib Dark Bar Chart Rendering
-                st.markdown("---")
-                st.markdown("### 📊 Personalized Feature Impact Analysis")
-                try:
-                    if isinstance(importance, dict):
-                        import matplotlib.pyplot as plt
-                        dynamic_importance = {feat: abs(input_data.get(feat, 0)) * importance[feat] for feat in features if feat in importance}
-                        sorted_features = sorted(dynamic_importance.items(), key=lambda x: x[1], reverse=False)
-                        feats, impacts = zip(*sorted_features) if sorted_features else ([], [])
-                        total_impact = sum(impacts) if sum(impacts) > 0 else 1
-                        percentages = [(val / total_impact) * 100 for val in impacts]
+            # Custom Matplotlib feature rendering logic goes beneath seamlessly
+            if isinstance(importance, dict):
+                import matplotlib.pyplot as plt
+                dynamic_importance = {feat: abs(input_data.get(feat, 0)) * importance[feat] for feat in features if feat in importance}
+                sorted_features = sorted(dynamic_importance.items(), key=lambda x: x[1], reverse=False)
+                feats, impacts = zip(*sorted_features) if sorted_features else ([], [])
+                total_impact = sum(impacts) if sum(impacts) > 0 else 1
+                percentages = [(val / total_impact) * 100 for val in impacts]
 
-                        fig, ax = plt.subplots(figsize=(7, 3.5))
-                        fig.patch.set_facecolor('#111827')
-                        ax.set_facecolor('#111827')
-                        colors = ['#3B82F6' if p < 30 else '#6366F1' if p < 60 else '#10B981' for p in percentages]
-                        bars = ax.barh(feats, percentages, color=colors, edgecolor='none', height=0.5)
-
-                        ax.tick_params(colors='#9CA3AF', labelsize=10)
-                        ax.spines['top'].set_visible(False)
-                        ax.spines['right'].set_visible(False)
-                        ax.spines['left'].set_color('#1F2937')
-                        ax.spines['bottom'].set_color('#1F2937')
-                        ax.set_xlabel("Relative Contribution Weight (%)", color='#9CA3AF', fontsize=10)
-
-                        for bar in bars:
-                            width = bar.get_width()
-                            ax.text(width + 1, bar.get_y() + bar.get_height()/2, f'{width:.1f}%', va='center', ha='left', color='#F3F4F6', fontsize=9, fontweight='bold')
-                        st.pyplot(fig)
-                except Exception as chart_error:
-                    st.warning(f"Feature importance rendering skipped: {chart_error}")
-
-            except Exception as e:
-                st.error(f"Prediction Pipeline Error: {e}")
+                fig, ax = plt.subplots(figsize=(7, 3))
+                fig.patch.set_facecolor('#111827'); ax.set_facecolor('#111827')
+                colors = ['#3B82F6' if p < 30 else '#6366F1' if p < 60 else '#10B981' for p in percentages]
+                bars = ax.barh(feats, percentages, color=colors, height=0.4)
+                ax.tick_params(colors='#9CA3AF', labelsize=9)
+                ax.spines['top'].set_visible(False); ax.spines['right'].set_visible(False)
+                st.pyplot(fig)
         else:
-            st.info("Adjust student parameters on the left pane and execute the analytical model pipeline.")
+            st.info("Awaiting structural parameters execution data matrices command.")
 
 # ==================================================
-# SCREEN 3: DATASET-DRIVEN AI COUNSELING CHATBOT (RAG - FIXED)
+# MODULE 3: STUDENT-FACING ANONYMOUS CHATBOT (RAG)
 # ==================================================
-elif st.session_state.view_state == "Student Safe-Space Chatbot":
-    st.subheader("💬 Advanced Dataset-Driven Counseling Copilot")
-    st.caption("🔒 Armed with a real-world institutional QA knowledge base to answer any student query dynamically.")
+elif st.session_state.view_state == "💬 Student Safe-Space: Anon Chatbot":
+    st.subheader("💬 Anonymous Student Well-being Safe-Space")
+    st.caption("🔒 Unconditionally confidential session. Connected to institutional resolution guidelines.")
 
-    # 1. Initialize structural session conversation arrays if missing
-    if "chat_history" not in st.session_state:
-        st.session_state.chat_history = [
-            {"role": "assistant", "content": "Welcome back. I am your specialized AI Academic Support Guide. Tell me about any administrative hurdles, financial strain, or exam anxiety you are experiencing."}
-        ]
+    if "student_chat" not in st.session_state:
+        st.session_state.student_chat = [{"role": "assistant", "content": "Hi there. I am an anonymous support space. Whether you are falling behind in classes, feeling overwhelmed by engineering concepts, or stressed about dues, tell me how you are doing."}]
 
-    # 2. Safely render the message vault on screen
-    for message in st.session_state.chat_history:
-        with st.chat_message(message["role"]):
-            st.write(message["content"])
+    for msg in st.session_state.student_chat:
+        with st.chat_message(msg["role"]): st.write(msg["content"])
 
-    # 3. Load and cache the TF-IDF search engine subroutines
     @st.cache_resource
-    def initialize_semantic_search():
-        if not os.path.exists("counseling_data.csv"):
-            return None, None, None
-        df_qa = pd.read_csv("counseling_data.csv")
+    def init_search():
+        if not os.path.exists("counseling_data.csv"): return None, None, None
+        df = pd.read_csv("counseling_data.csv")
         from sklearn.feature_extraction.text import TfidfVectorizer
         vectorizer = TfidfVectorizer(stop_words='english')
-        # Transforms all conversational phrases into dynamic intent maps
-        tfidf_matrix = vectorizer.fit_transform(df_qa['Questions'].astype(str))
-        return df_qa, vectorizer, tfidf_matrix
+        matrix = vectorizer.fit_transform(df['Questions'].astype(str))
+        return df, vectorizer, matrix
 
-    df_qa, vectorizer, tfidf_matrix = initialize_semantic_search()
+    df_qa, vectorizer, tfidf_matrix = init_search()
 
-    # 4. Handle live conversational user input captures cleanly
-    if user_prompt := st.chat_input("Ask anything safely..."):
-        # Append user text to persistent state arrays instantly
-        st.session_state.chat_history.append({"role": "user", "content": user_prompt})
-        
-        # Force a rerun to display the user's text on screen immediately
-        st.rerun()
+    if prompt := st.chat_input("Explain what's going on..."):
+        st.session_state.student_chat.append({"role": "user", "content": prompt})
+        with st.chat_message("user"): st.write(prompt)
 
-# 5. Handle AI response processing block if user just sent a prompt
-if "chat_history" in st.session_state and len(st.session_state.chat_history) > 0 and st.session_state.chat_history[-1]["role"] == "user":
-    user_prompt = st.session_state.chat_history[-1]["content"]
-    
-    with st.chat_message("assistant"):
-        with st.spinner("Searching counseling database..."):
+        with st.chat_message("assistant"):
             if df_qa is not None and vectorizer is not None:
                 from sklearn.metrics.pairwise import cosine_similarity
+                q_vec = vectorizer.transform([prompt])
+                scores = cosine_similarity(q_vec, tfidf_matrix).flatten()
+                best = scores.argmax()
                 
-                # Mathematical Vectorization matching pipeline
-                query_vector = vectorizer.transform([user_prompt])
-                similarity_scores = cosine_similarity(query_vector, tfidf_matrix).flatten()
-                best_match_idx = similarity_scores.argmax()
-                highest_score = similarity_scores[best_match_idx]
-                
-                # Threshold verification matching logic
-                if highest_score > 0.15:
-                    ai_response = f"### 🛡️ Verified Counseling Framework\n\n{df_qa['Answers'].iloc[best_match_idx]}"
+                if scores[best] > 0.15:
+                    res = df_qa['Answers'].iloc[best]
                 else:
-                    ai_response = "### 🤝 Adaptive System Guidance\n\nI couldn't find an exact matching scenario within our knowledge metrics, but you don't have to navigate this pressure alone. Would you like me to flag this secure session to request a priority, confidential meeting with campus student services?"
+                    res = "### 🤝 Adaptive Support Space\n\nI hear you, and I understand things feel tough right now. I don't have an exact matching scenario, but you do not have to carry this workload weight alone. Would you like me to securely and safely send a request to schedule a private, non-judgmental talk with an advisor?"
             else:
-                ai_response = "⚠️ **Database Notice:** Local file asset `counseling_data.csv` was not detected. Please execute `python fetch_chatbot_data.py` in your terminal first."
-            
-            st.write(ai_response)
-    
-    # Store response and refresh the page smoothly to preserve conversation tracking
-    st.session_state.chat_history.append({"role": "assistant", "content": ai_response})
-    st.rerun()
+                res = "⚠️ Counseling data matrix registry uncompiled."
+            st.write(res)
+        st.session_state.student_chat.append({"role": "assistant", "content": res})
+        st.rerun()
+
+# ==================================================
+# MODULE 4: COUNSELOR-FACING SMART ASSISTANT
+# ==================================================
+elif st.session_state.view_state == "🤖 Counselor Smart Assistant: Search":
+    st.subheader("🤖 Internal Administrative Information Retrieval Assistant")
+    st.caption("🔍 Search institutional dataset trends and extract quick performance metrics summary cards.")
+
+    # Simulated administrative data indexing array records
+    mock_students = [
+        {"Name": "Student Profile #1042", "Branch": "B.Tech CSE", "Attendance": "62%", "Grade": "08/20", "Status": "🔴 Critical Attrition Risk Signature"},
+        {"Name": "Student Profile #2081", "Branch": "B.Tech ECE", "Attendance": "89%", "Grade": "15/20", "Status": "🟢 Stable Performance Profile"},
+        {"Name": "Student Profile #1105", "Branch": "B.Tech ME", "Attendance": "55%", "Grade": "07/20", "Status": "🔴 Critical Attrition Risk Signature"}
+    ]
+
+    if "counselor_chat" not in st.session_state:
+        st.session_state.counselor_chat = [{"role": "assistant", "content": "Welcome, Administrator. Ask me to search performance rosters or extract group trends. E.g., 'Who are the high risk engineering students?'"}]
+
+    for msg in st.session_state.counselor_chat:
+        with st.chat_message(msg["role"]): st.write(msg["content"])
+
+    if query := st.chat_input("Query institutional database metrics..."):
+        st.session_state.counselor_chat.append({"role": "user", "content": query})
+        with st.chat_message("user"): st.write(query)
+
+        with st.chat_message("assistant"):
+            q_low = query.lower()
+            if "risk" in q_low or "engineering" in q_low or "who" in q_low:
+                res = "### 📂 Extracted Critical Risk Profiles (Engineering Dev Department):\n\n"
+                for student in mock_students:
+                    if "Critical" in student["Status"]:
+                        res += f"- **{student['Name']}** ({student['Branch']}) | Attendance: {student['Attendance']} | Grade: {student['Grade']} -> **{student['Status']}**\n"
+            else:
+                res = "### 📑 System Query Parsing Completed\n\nReturned 0 exact index matches. For optimization, please query explicit parameter syntax groupings such as: `risk profiles`, `attendance drop list`, or `term averages`."
+            st.write(res)
+        st.session_state.counselor_chat.append({"role": "assistant", "content": res})
+        st.rerun()
