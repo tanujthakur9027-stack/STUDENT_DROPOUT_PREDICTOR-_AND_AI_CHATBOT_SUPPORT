@@ -7,7 +7,7 @@ An AI-driven institutional dashboard designed to detect early warning signs of s
 ##  The Team
 Developed with dedication by:
 * **Tanuj Kumar Singh** (B.Tech CSE, Mangalayatan University)
-* **Bhavna Agrawal**
+* **Bhavna Agrawal**  (B.Tech CSE, Mangalayatan University)
 
 ---
 
@@ -29,19 +29,12 @@ Educational institutions frequently fail to identify early indicators of student
 * Transcends "black-box" models by rendering a dynamic, customized **Feature Impact Analysis** chart using Matplotlib.
 * Pinpoints the precise variables causing a specific student's risk profile to spike, giving counselors immediate context.
 
-### 3. Advanced GenAI Problem-Solving Copilot
-* A sympathetic, context-aware chatbot workspace leveraging specialized system prompt guidelines.
-* Integrates a robust hybrid architecture: pairs live Large Language Model orchestration with deterministic contextual simulation fallbacks to guarantee uninterrupted live hackathon demonstrations.
-
----
-
 ##  Tech Stack & Architecture
 
 * **Frontend UI:** Streamlit (Custom Styled Dark Gradient Persona)
 * **Core Language:** Python 
 * **Data & Machine Learning:** Pandas, NumPy, Scikit-Learn
 * **Data Visualization:** Matplotlib (Customized Dark Theme Plotting)
-* **Generative AI:** OpenAI API (`gpt-4o-mini`)
 
 ---
 ---
