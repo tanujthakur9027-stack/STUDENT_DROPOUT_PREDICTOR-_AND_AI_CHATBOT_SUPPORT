@@ -1,24 +1,24 @@
-# 🎓 EduGuard AI: Drop-out Prediction & Proactive Counseling System
+#  EduGuard AI: Drop-out Prediction & Proactive Counseling System
 
 An AI-driven institutional dashboard designed to detect early warning signs of student attrition using Machine Learning, coupled with an advanced Generative AI Counseling Copilot to provide immediate, empathetic problem-solving support.
 
 ---
 
-## 👥 The Team
+##  The Team
 Developed with dedication by:
 * **Tanuj Kumar Singh** (B.Tech CSE, Mangalayatan University)
 * **Bhavna Agrawal**
 
 ---
 
-## 📌 Problem Statement (PS)
+##  Problem Statement (PS)
 Educational institutions frequently fail to identify early indicators of student dropouts because critical telemetry—such as financial status, demographic metrics, and academic performance drops—sits passively in fragmented databases. Furthermore, students experiencing academic burnout or financial distress often avoid seeking human counseling due to anxiety, stigma, or institutional friction. 
 
 **EduGuard AI** solves this by creating a predictive early warning framework for administrators alongside an anonymous, conversational safe space for students.
 
 ---
 
-## 🚀 Key Features
+##  Key Features
 
 ### 1. Multi-Factor Predictive ML Engine
 * Powered by an optimized **Random Forest Classifier** trained on verified real-world institutional data.
@@ -35,7 +35,7 @@ Educational institutions frequently fail to identify early indicators of student
 
 ---
 
-## 🛠️ Tech Stack & Architecture
+##  Tech Stack & Architecture
 
 * **Frontend UI:** Streamlit (Custom Styled Dark Gradient Persona)
 * **Core Language:** Python 
@@ -46,14 +46,14 @@ Educational institutions frequently fail to identify early indicators of student
 ---
 ---
 
-## 🌐 Cloud Deployment
+##  Cloud Deployment
 
 This application is optimized for persistent cloud environments and is actively hosted on the Streamlit Community Cloud network. 
 
 You can interact with our live production dashboard and test different risk scenarios in real-time here:
-👉 **[Live App Deployment Portal](https://studentdropoutpredictor-andaichatbotsupport-s7jc58wm4kff5jcijz.streamlit.app/)**
+ **[Live App Deployment Portal](https://studentdropoutpredictor-andaichatbotsupport-s7jc58wm4kff5jcijz.streamlit.app/)**
 
-## 📂 Project Structure
+##  Project Structure
 
 ```text
 ├── app.py              # Main multi-page Streamlit application & chatbot UI
